@@ -1,230 +1,64 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
-import { CheckCircle2, Copy, ExternalLink, Globe2, Laptop, Link2, Smartphone, Sparkles } from "lucide-react";
+import { Bell, ChevronLeft, Gift, Heart, Home, Menu, Search, ShieldCheck, ShoppingCart, Sparkles, Star, UserRound, Zap } from "lucide-react";
 
-type Mode = "desktop" | "mobile" | "both";
+const categories = [
+  ["متاجر رقمية","🛍️"],["منصات ألعاب","🎮"],["الإتصال والبيانات","📱"],["بطاقات تسوق","💳"],
+  ["خدمات وإشتراكات","✨"],["مطاعم","🍔"],["الشحن المباشر","⚡"],["بطاقات المتجر","🎁"],
+];
+const best = [
+  ["بطاقات المتجر","هدية","من 25 ر.س"],["آيتونز","","من 15 ر.س"],["شحن سوا","STC","من 20 ر.س"],["يلا لودو","🎲","من 5 ر.س"],
+];
+const products = [
+  {title:"EA SPORTS FC 27 Ultimate Edition", price:"379 ر.س", tag:"جديد", art:"FC 27"},
+  {title:"EA SPORTS FC 27 Standard Edition", price:"269 ر.س", tag:"الأكثر طلباً", art:"FC 27"},
+  {title:"بطاقة آيتونز 15 دولار", price:"61.88 ر.س", tag:"فوري", art:""},
+  {title:"بطاقة ببجي 1500 + 300 شدة", price:"93.75 ر.س", tag:"عرض", art:"PUBG"},
+];
 
-export default function Home() {
-  const [url, setUrl] = useState("");
-  const [mode, setMode] = useState<Mode>("both");
-  const [readyUrl, setReadyUrl] = useState("");
-  const [error, setError] = useState("");
-  const [copied, setCopied] = useState(false);
+function SectionTitle({children}:{children:React.ReactNode}) {
+  return <div className="mb-3 flex items-center justify-between"><h2 className="text-[19px] font-black text-slate-900">{children}</h2><button className="flex items-center gap-1 text-xs font-bold text-violet-700">عرض الكل <ChevronLeft className="size-4"/></button></div>
+}
 
-  const taskPrompt = useMemo(() => {
-    if (!readyUrl) return "";
-
-    const viewport =
-      mode === "desktop"
-        ? "ركز على نسخة الكمبيوتر."
-        : mode === "mobile"
-          ? "ركز على نسخة الجوال."
-          : "ابنِ نسختي الجوال والكمبيوتر واختبر الاستجابة بينهما.";
-
-    return [
-      "نفّذ هذه المهمة مباشرة ولا تكتفِ بشرح الخطوات:",
-      "",
-      `الموقع المطلوب إعادة بنائه: ${readyUrl}`,
-      `المستودع الذي أعمل عليه: https://github.com/mksstoore-gif/ai-website-cloner-arabic`,
-      "",
-      viewport,
-      "",
-      "استخدم الموقع كمصدر مرجعي فقط، وافترض أنني أملك الموقع أو لدي إذن بإعادة بنائه.",
-      "افحص الصفحات العامة والتصميم والمحتوى المرئي والألوان والخطوط والتخطيط والتجاوب والحركات المهمة.",
-      "لا تنفذ تسجيل دخول، لا تتجاوز حماية، ولا تجمع بيانات خاصة أو أسرار.",
-      "",
-      "المطلوب منك:",
-      "1) استخدم GitHub المتصل بحسابي وافتح المستودع المذكور.",
-      "2) أنشئ فرع عمل جديد ولا تكسر النسخة المنشورة الحالية.",
-      "3) أعد بناء الواجهة بكود Next.js + React + TypeScript + Tailwind قابل للتعديل، وليس Screenshot أو iframe.",
-      "4) استخدم الأصول العامة المسموح بها فقط، وأنشئ بدائل مناسبة عندما لا يمكن إعادة استخدام أصل معين.",
-      "5) اجعل الواجهة عربية عند الحاجة، ومتوافقة مع الجوال.",
-      "6) شغّل lint و typecheck و build، وأصلح الأخطاء قبل اعتباره جاهزاً.",
-      "7) إذا كان النشر على GitHub Pages مناسباً فحافظ عليه قابلاً للنشر.",
-      "8) في النهاية أعطني رابط الفرع أو الـPR وما الذي تم بناؤه فعلياً.",
-      "",
-      "لا تطلب مني نسخ ولصق أو استخدام كمبيوتر. نفّذ أكبر قدر ممكن بنفسك من الأدوات المتصلة.",
-    ].join("\n");
-  }, [readyUrl, mode]);
-
-  const chatgptUrl = useMemo(() => {
-    if (!taskPrompt) return "#";
-    return `https://chatgpt.com/?prompt=${encodeURIComponent(taskPrompt)}`;
-  }, [taskPrompt]);
-
-  function normalizeUrl(value: string) {
-    const trimmed = value.trim();
-    if (!trimmed) return "";
-    return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
-  }
-
-  function prepare(event: FormEvent) {
-    event.preventDefault();
-    setError("");
-    setCopied(false);
-
-    try {
-      const parsed = new URL(normalizeUrl(url));
-      if (!["http:", "https:"].includes(parsed.protocol)) throw new Error("bad protocol");
-      setReadyUrl(parsed.toString());
-    } catch {
-      setReadyUrl("");
-      setError("أدخل رابط موقع صحيح، مثال: https://example.com");
-    }
-  }
-
-  async function copyTask() {
-    if (!taskPrompt) return;
-    await navigator.clipboard.writeText(taskPrompt);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1800);
-  }
-
-  return (
-    <main className="min-h-screen overflow-hidden bg-[#070b16] text-white" dir="rtl">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_70%_10%,rgba(99,102,241,.23),transparent_32%),radial-gradient(circle_at_15%_38%,rgba(14,165,233,.14),transparent_27%)]" />
-
-      <header className="relative mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-5 sm:px-8">
-        <div className="flex items-center gap-3">
-          <div className="grid size-11 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 to-cyan-400 shadow-lg shadow-indigo-500/20">
-            <Sparkles className="size-5" />
+export default function HomePage(){
+  return <main dir="rtl" className="min-h-screen bg-[#f7f7fb] pb-24 text-slate-900">
+    <div className="bg-[#5426b7] text-white">
+      <div className="mx-auto max-w-md px-4 pb-5 pt-3">
+        <div className="mb-4 flex items-center justify-between">
+          <button className="grid size-10 place-items-center rounded-full bg-white/10"><Menu className="size-5"/></button>
+          <div className="flex items-center gap-2">
+            <div className="text-left leading-none"><div className="text-[10px] font-bold text-violet-200">متجر البطاقات</div><div className="text-lg font-black tracking-tight">دليل<span className="text-[#ffd43b]">+</span></div></div>
+            <div className="grid size-10 place-items-center rounded-xl bg-[#ffd43b] font-black text-[#5426b7]">D</div>
           </div>
-          <div>
-            <div className="font-black tracking-tight">نسّاخ AI</div>
-            <div className="text-xs text-slate-400">GitHub + ChatGPT</div>
-          </div>
+          <button className="relative grid size-10 place-items-center rounded-full bg-white/10"><ShoppingCart className="size-5"/><span className="absolute -left-1 -top-1 grid size-5 place-items-center rounded-full bg-[#ffd43b] text-[10px] font-black text-[#5426b7]">1</span></button>
         </div>
+        <label className="flex h-12 items-center gap-3 rounded-2xl bg-white px-4 shadow-lg shadow-violet-950/10">
+          <Search className="size-5 text-slate-400"/><input className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400" placeholder="اكتب اللي تبغاه، وخلّنا نلقاه لك"/>
+        </label>
+      </div>
+    </div>
 
-        <div className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs text-emerald-300">
-          بدون API
-        </div>
-      </header>
-
-      <section className="relative mx-auto flex w-full max-w-6xl flex-col items-center px-5 pb-20 pt-10 text-center sm:px-8 sm:pt-16">
-        <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-indigo-400/20 bg-indigo-400/10 px-4 py-2 text-sm text-indigo-200">
-          <Globe2 className="size-4" />
-          ويب آب مجاني
-        </div>
-
-        <h1 className="max-w-4xl text-balance text-4xl font-black leading-[1.14] tracking-tight sm:text-6xl">
-          ضع رابط الموقع
-          <span className="block bg-gradient-to-l from-cyan-300 via-indigo-300 to-fuchsia-300 bg-clip-text text-transparent">
-            وأرسله مباشرة إلى ChatGPT
-          </span>
-        </h1>
-
-        <p className="mt-5 max-w-2xl text-pretty text-base leading-8 text-slate-400 sm:text-lg">
-          لا مفتاح API، لا Backend، ولا خدمة مدفوعة. الويب آب يجهز مهمة الاستنساخ كاملة ويفتحها في ChatGPT بحسابك.
-        </p>
-
-        <form onSubmit={prepare} className="mt-9 w-full max-w-3xl rounded-[28px] border border-white/10 bg-white/[.055] p-3 shadow-2xl shadow-black/30 backdrop-blur-xl">
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <div className="relative flex-1">
-              <Link2 className="absolute right-4 top-1/2 size-5 -translate-y-1/2 text-slate-500" />
-              <input
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                inputMode="url"
-                autoCapitalize="none"
-                autoCorrect="off"
-                placeholder="https://example.com"
-                className="h-14 w-full rounded-2xl border border-white/10 bg-[#0b1020] pr-12 pl-4 text-left text-base outline-none transition placeholder:text-slate-600 focus:border-indigo-400/60 focus:ring-4 focus:ring-indigo-500/10"
-                dir="ltr"
-                aria-label="رابط الموقع"
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="h-14 rounded-2xl bg-gradient-to-l from-indigo-500 to-violet-500 px-7 font-bold shadow-lg shadow-indigo-700/20 transition active:scale-[.98] sm:min-w-44"
-            >
-              تجهيز المهمة
-            </button>
-          </div>
-
-          <div className="mt-3 grid grid-cols-3 gap-2">
-            {[
-              { id: "desktop" as const, label: "كمبيوتر", icon: Laptop },
-              { id: "mobile" as const, label: "جوال", icon: Smartphone },
-              { id: "both" as const, label: "الاثنان", icon: Sparkles },
-            ].map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setMode(id)}
-                className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm transition ${
-                  mode === id
-                    ? "border-indigo-400/40 bg-indigo-400/15 text-indigo-200"
-                    : "border-white/5 bg-black/10 text-slate-500 hover:text-slate-300"
-                }`}
-              >
-                <Icon className="size-4" />
-                {label}
-              </button>
-            ))}
-          </div>
-        </form>
-
-        {error && (
-          <div className="mt-4 w-full max-w-3xl rounded-2xl border border-rose-400/20 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">
-            {error}
-          </div>
-        )}
-
-        {readyUrl && (
-          <div className="mt-6 w-full max-w-3xl rounded-[28px] border border-emerald-400/15 bg-emerald-400/[.06] p-5 text-right">
-            <div className="flex items-start gap-3">
-              <CheckCircle2 className="mt-0.5 size-6 shrink-0 text-emerald-400" />
-              <div className="min-w-0 flex-1">
-                <h2 className="font-bold text-emerald-200">المهمة جاهزة</h2>
-                <p className="mt-1 break-all text-sm leading-6 text-slate-400" dir="ltr">{readyUrl}</p>
-              </div>
-            </div>
-
-            <div className="mt-5 grid gap-3">
-              <a
-                href={chatgptUrl}
-                className="flex h-14 items-center justify-center gap-2 rounded-2xl bg-white font-black text-slate-950 transition active:scale-[.99]"
-              >
-                افتح في ChatGPT
-                <ExternalLink className="size-4" />
-              </a>
-
-              <button
-                type="button"
-                onClick={copyTask}
-                className="flex h-12 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[.06] font-semibold text-slate-200"
-              >
-                {copied ? <CheckCircle2 className="size-4 text-emerald-400" /> : <Copy className="size-4" />}
-                {copied ? "تم نسخ المهمة" : "نسخ المهمة كخيار احتياطي"}
-              </button>
-            </div>
-
-            <p className="mt-4 text-center text-xs leading-6 text-slate-500">
-              قد يفتح ChatGPT والمهمة مكتوبة مسبقاً وتحتاج فقط ضغطة «إرسال».
-            </p>
-          </div>
-        )}
-
-        <div className="mt-12 grid w-full max-w-5xl gap-3 text-right sm:grid-cols-3">
-          {[
-            ["01", "ضع الرابط", "أدخل رابط الموقع الذي تملك حق إعادة بنائه."],
-            ["02", "افتح ChatGPT", "المهمة الكاملة تنتقل مع الرابط والمستودع تلقائياً."],
-            ["03", "ChatGPT يبني", "يستخدم GitHub المتصل بحسابك وينفذ الفحص والبناء قدر الإمكان."],
-          ].map(([num, title, desc]) => (
-            <article key={num} className="rounded-3xl border border-white/8 bg-white/[.035] p-5">
-              <div className="text-xs font-bold text-indigo-300">{num}</div>
-              <h3 className="mt-3 font-bold">{title}</h3>
-              <p className="mt-2 text-sm leading-7 text-slate-500">{desc}</p>
-            </article>
-          ))}
-        </div>
-
-        <p className="mt-10 max-w-2xl text-xs leading-6 text-slate-600">
-          استخدم الأداة فقط للمواقع التي تملكها أو لديك إذن بإعادة بنائها. لا يتم تخزين مفتاح OpenAI داخل هذا الويب آب.
-        </p>
+    <div className="mx-auto max-w-md space-y-7 px-4 pt-4">
+      <section className="relative overflow-hidden rounded-[26px] bg-gradient-to-l from-[#32156f] via-[#5927b9] to-[#7a46e5] p-5 text-white shadow-xl shadow-violet-200">
+        <div className="absolute -left-5 -top-6 size-28 rounded-full bg-[#ffd43b]/20 blur-sm"/><Sparkles className="absolute left-6 top-5 size-8 text-[#ffd43b]"/>
+        <div className="relative max-w-[70%]"><span className="rounded-full bg-[#ffd43b] px-2.5 py-1 text-[10px] font-black text-[#44208e]">مكسب</span><h1 className="mt-3 text-2xl font-black leading-tight">كل ما شاركت أكثر، زاد مكسبك!</h1><p className="mt-2 text-xs leading-5 text-violet-100">شارك رابطك مع أصدقائك واربح من مشترياتهم.</p><button className="mt-4 rounded-xl bg-white px-4 py-2 text-xs font-black text-[#5426b7]">اكتشفه الآن</button></div>
       </section>
-    </main>
-  );
+
+      <section><SectionTitle>أقسام البطاقات</SectionTitle><div className="grid grid-cols-4 gap-x-2 gap-y-4">{categories.map(([name,icon])=><button key={name} className="min-w-0 text-center"><span className="mx-auto grid aspect-square w-full max-w-[76px] place-items-center rounded-[22px] border border-violet-100 bg-white text-3xl shadow-sm">{icon}</span><span className="mt-2 block truncate text-[11px] font-bold">{name}</span></button>)}</div></section>
+
+      <section><SectionTitle>البطاقات الأكثر مبيعًا</SectionTitle><div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none]">{best.map(([name,mark,price])=><article key={name} className="min-w-[132px] snap-start rounded-2xl bg-white p-3 shadow-sm"><div className="grid h-24 place-items-center rounded-xl bg-gradient-to-br from-violet-100 to-indigo-50 text-2xl font-black text-violet-800">{mark}</div><h3 className="mt-2 text-sm font-black">{name}</h3><p className="mt-1 text-[11px] text-slate-500">{price}</p></article>)}</div></section>
+
+      <section><SectionTitle>وصل حديثًا</SectionTitle><div className="grid grid-cols-2 gap-3">{products.map((p,i)=><article key={p.title} className="overflow-hidden rounded-[20px] bg-white shadow-sm"><div className={"relative grid h-32 place-items-center "+(i<2?"bg-gradient-to-br from-[#171829] to-[#5525b3] text-white":"bg-gradient-to-br from-slate-100 to-violet-100 text-violet-900")}><span className="absolute right-2 top-2 rounded-full bg-[#ffd43b] px-2 py-1 text-[9px] font-black text-[#44208e]">{p.tag}</span><span className="text-2xl font-black tracking-tight">{p.art}</span><button className="absolute left-2 top-2 grid size-7 place-items-center rounded-full bg-white/90 text-slate-600"><Heart className="size-3.5"/></button></div><div className="p-3"><h3 className="line-clamp-2 min-h-10 text-xs font-bold leading-5">{p.title}</h3><div className="mt-2 flex items-end justify-between"><div><div className="text-sm font-black text-[#5426b7]">{p.price}</div><div className="text-[9px] text-slate-400">المتجر السعودي</div></div><button className="grid size-8 place-items-center rounded-xl bg-[#5426b7] text-white"><ShoppingCart className="size-4"/></button></div></div></article>)}</div></section>
+
+      <section className="overflow-hidden rounded-[26px] bg-[#fff7d6] p-5"><div className="flex items-center gap-4"><div className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#ffd43b] text-[#5426b7]"><Star className="size-7 fill-current"/></div><div><div className="text-xs font-black text-amber-700">برنامج الولاء</div><h2 className="mt-1 text-xl font-black">دليل ستارز</h2><p className="mt-1 text-xs leading-5 text-slate-600">اجمع نقاطك مع كل عملية شراء واستبدلها بمكافآت.</p></div></div></section>
+
+      <section><h2 className="mb-4 text-center text-xl font-black">تسوّق أسرع وأسهل</h2><div className="grid gap-3">{[[Zap,"استلام فوري","تصلك بطاقتك مباشرة بعد إتمام الطلب."],[ShieldCheck,"دفع آمن","خيارات دفع متنوعة وتجربة موثوقة."],[Gift,"مكافآت أكثر","اكسب نقاطًا ومزايا مع مشترياتك."]].map(([Icon,title,desc])=>{const C=Icon as typeof Zap;return <div key={String(title)} className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm"><div className="grid size-11 shrink-0 place-items-center rounded-xl bg-violet-50 text-[#5426b7]"><C className="size-5"/></div><div><h3 className="text-sm font-black">{String(title)}</h3><p className="mt-1 text-[11px] leading-5 text-slate-500">{String(desc)}</p></div></div>})}</div></section>
+
+      <footer className="pb-4 pt-2 text-center text-[10px] leading-5 text-slate-400">واجهة تجريبية معاد بناؤها بكود React قابل للتعديل.<br/>الأسماء والعلامات المذكورة لأغراض العرض المرجعي.</footer>
+    </div>
+
+    <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto flex h-[72px] max-w-md items-center justify-around border-t border-slate-100 bg-white/95 px-3 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_30px_rgba(30,20,60,.08)] backdrop-blur">
+      {[[Home,"الرئيسية",true],[Search,"استكشف",false],[Gift,"المكافآت",false],[Bell,"التنبيهات",false],[UserRound,"حسابي",false]].map(([Icon,label,active])=>{const C=Icon as typeof Home;return <button key={String(label)} className={"flex min-w-12 flex-col items-center gap-1 text-[9px] font-bold "+(active?"text-[#5426b7]":"text-slate-400")}><C className={"size-5 "+(active?"fill-violet-100":"")}/><span>{String(label)}</span></button>})}
+    </nav>
+  </main>
 }

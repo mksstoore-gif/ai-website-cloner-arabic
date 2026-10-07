@@ -1,21 +1,57 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { CheckCircle2, Copy, ExternalLink, Globe2, Laptop, Link2, Loader2, Smartphone, Sparkles } from "lucide-react";
+import { CheckCircle2, Copy, ExternalLink, Globe2, Laptop, Link2, Smartphone, Sparkles } from "lucide-react";
 
 type Mode = "desktop" | "mobile" | "both";
 
 export default function Home() {
   const [url, setUrl] = useState("");
   const [mode, setMode] = useState<Mode>("both");
-  const [submittedUrl, setSubmittedUrl] = useState("");
-  const [message, setMessage] = useState("");
+  const [readyUrl, setReadyUrl] = useState("");
+  const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const cloneCommand = useMemo(() => {
-    if (!submittedUrl) return "";
-    return `/clone-website ${submittedUrl}`;
-  }, [submittedUrl]);
+  const taskPrompt = useMemo(() => {
+    if (!readyUrl) return "";
+
+    const viewport =
+      mode === "desktop"
+        ? "ركز على نسخة الكمبيوتر."
+        : mode === "mobile"
+          ? "ركز على نسخة الجوال."
+          : "ابنِ نسختي الجوال والكمبيوتر واختبر الاستجابة بينهما.";
+
+    return [
+      "نفّذ هذه المهمة مباشرة ولا تكتفِ بشرح الخطوات:",
+      "",
+      `الموقع المطلوب إعادة بنائه: ${readyUrl}`,
+      `المستودع الذي أعمل عليه: https://github.com/mksstoore-gif/ai-website-cloner-arabic`,
+      "",
+      viewport,
+      "",
+      "استخدم الموقع كمصدر مرجعي فقط، وافترض أنني أملك الموقع أو لدي إذن بإعادة بنائه.",
+      "افحص الصفحات العامة والتصميم والمحتوى المرئي والألوان والخطوط والتخطيط والتجاوب والحركات المهمة.",
+      "لا تنفذ تسجيل دخول، لا تتجاوز حماية، ولا تجمع بيانات خاصة أو أسرار.",
+      "",
+      "المطلوب منك:",
+      "1) استخدم GitHub المتصل بحسابي وافتح المستودع المذكور.",
+      "2) أنشئ فرع عمل جديد ولا تكسر النسخة المنشورة الحالية.",
+      "3) أعد بناء الواجهة بكود Next.js + React + TypeScript + Tailwind قابل للتعديل، وليس Screenshot أو iframe.",
+      "4) استخدم الأصول العامة المسموح بها فقط، وأنشئ بدائل مناسبة عندما لا يمكن إعادة استخدام أصل معين.",
+      "5) اجعل الواجهة عربية عند الحاجة، ومتوافقة مع الجوال.",
+      "6) شغّل lint و typecheck و build، وأصلح الأخطاء قبل اعتباره جاهزاً.",
+      "7) إذا كان النشر على GitHub Pages مناسباً فحافظ عليه قابلاً للنشر.",
+      "8) في النهاية أعطني رابط الفرع أو الـPR وما الذي تم بناؤه فعلياً.",
+      "",
+      "لا تطلب مني نسخ ولصق أو استخدام كمبيوتر. نفّذ أكبر قدر ممكن بنفسك من الأدوات المتصلة.",
+    ].join("\n");
+  }, [readyUrl, mode]);
+
+  const chatgptUrl = useMemo(() => {
+    if (!taskPrompt) return "#";
+    return `https://chatgpt.com/?prompt=${encodeURIComponent(taskPrompt)}`;
+  }, [taskPrompt]);
 
   function normalizeUrl(value: string) {
     const trimmed = value.trim();
@@ -23,26 +59,24 @@ export default function Home() {
     return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
   }
 
-  function handleSubmit(event: FormEvent) {
+  function prepare(event: FormEvent) {
     event.preventDefault();
-    setMessage("");
+    setError("");
     setCopied(false);
 
-    const normalized = normalizeUrl(url);
-
     try {
-      const parsed = new URL(normalized);
+      const parsed = new URL(normalizeUrl(url));
       if (!["http:", "https:"].includes(parsed.protocol)) throw new Error("bad protocol");
-      setSubmittedUrl(parsed.toString());
+      setReadyUrl(parsed.toString());
     } catch {
-      setSubmittedUrl("");
-      setMessage("أدخل رابط موقع صحيح، مثال: https://example.com");
+      setReadyUrl("");
+      setError("أدخل رابط موقع صحيح، مثال: https://example.com");
     }
   }
 
-  async function copyCommand() {
-    if (!cloneCommand) return;
-    await navigator.clipboard.writeText(cloneCommand);
+  async function copyTask() {
+    if (!taskPrompt) return;
+    await navigator.clipboard.writeText(taskPrompt);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1800);
   }
@@ -58,33 +92,33 @@ export default function Home() {
           </div>
           <div>
             <div className="font-black tracking-tight">نسّاخ AI</div>
-            <div className="text-xs text-slate-400">Website Cloner</div>
+            <div className="text-xs text-slate-400">GitHub + ChatGPT</div>
           </div>
         </div>
-        <div className="rounded-full border border-white/10 bg-white/[.04] px-3 py-1.5 text-xs text-emerald-300">
-          مفتوح المصدر
+
+        <div className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs text-emerald-300">
+          بدون API
         </div>
       </header>
 
-      <section className="relative mx-auto flex w-full max-w-6xl flex-col items-center px-5 pb-20 pt-12 text-center sm:px-8 sm:pt-20">
+      <section className="relative mx-auto flex w-full max-w-6xl flex-col items-center px-5 pb-20 pt-10 text-center sm:px-8 sm:pt-16">
         <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-indigo-400/20 bg-indigo-400/10 px-4 py-2 text-sm text-indigo-200">
           <Globe2 className="size-4" />
-          مصمم للجوال أولاً
+          ويب آب مجاني
         </div>
 
         <h1 className="max-w-4xl text-balance text-4xl font-black leading-[1.14] tracking-tight sm:text-6xl">
-          حوّل رابط أي موقع إلى
+          ضع رابط الموقع
           <span className="block bg-gradient-to-l from-cyan-300 via-indigo-300 to-fuchsia-300 bg-clip-text text-transparent">
-            مشروع قابل للتعديل
+            وأرسله مباشرة إلى ChatGPT
           </span>
         </h1>
 
         <p className="mt-5 max-w-2xl text-pretty text-base leading-8 text-slate-400 sm:text-lg">
-          ضع رابط الموقع، اختر طريقة المعاينة، وجهّز مهمة الاستنساخ للمحرك الأصلي المبني على
-          Next.js ووكيل الذكاء الاصطناعي.
+          لا مفتاح API، لا Backend، ولا خدمة مدفوعة. الويب آب يجهز مهمة الاستنساخ كاملة ويفتحها في ChatGPT بحسابك.
         </p>
 
-        <form onSubmit={handleSubmit} className="mt-9 w-full max-w-3xl rounded-[28px] border border-white/10 bg-white/[.055] p-3 shadow-2xl shadow-black/30 backdrop-blur-xl">
+        <form onSubmit={prepare} className="mt-9 w-full max-w-3xl rounded-[28px] border border-white/10 bg-white/[.055] p-3 shadow-2xl shadow-black/30 backdrop-blur-xl">
           <div className="flex flex-col gap-3 sm:flex-row">
             <div className="relative flex-1">
               <Link2 className="absolute right-4 top-1/2 size-5 -translate-y-1/2 text-slate-500" />
@@ -100,11 +134,12 @@ export default function Home() {
                 aria-label="رابط الموقع"
               />
             </div>
+
             <button
               type="submit"
               className="h-14 rounded-2xl bg-gradient-to-l from-indigo-500 to-violet-500 px-7 font-bold shadow-lg shadow-indigo-700/20 transition active:scale-[.98] sm:min-w-44"
             >
-              تجهيز الاستنساخ
+              تجهيز المهمة
             </button>
           </div>
 
@@ -131,56 +166,52 @@ export default function Home() {
           </div>
         </form>
 
-        {message && (
+        {error && (
           <div className="mt-4 w-full max-w-3xl rounded-2xl border border-rose-400/20 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">
-            {message}
+            {error}
           </div>
         )}
 
-        {submittedUrl && (
+        {readyUrl && (
           <div className="mt-6 w-full max-w-3xl rounded-[28px] border border-emerald-400/15 bg-emerald-400/[.06] p-5 text-right">
             <div className="flex items-start gap-3">
               <CheckCircle2 className="mt-0.5 size-6 shrink-0 text-emerald-400" />
               <div className="min-w-0 flex-1">
-                <h2 className="font-bold text-emerald-200">الرابط جاهز للمحرك</h2>
-                <p className="mt-1 break-all text-sm leading-6 text-slate-400" dir="ltr">{submittedUrl}</p>
+                <h2 className="font-bold text-emerald-200">المهمة جاهزة</h2>
+                <p className="mt-1 break-all text-sm leading-6 text-slate-400" dir="ltr">{readyUrl}</p>
               </div>
             </div>
 
-            <div className="mt-4 rounded-2xl border border-white/8 bg-black/20 p-4">
-              <div className="mb-2 text-xs text-slate-500">أمر المحرك الأصلي</div>
-              <code className="block overflow-x-auto whitespace-nowrap text-left text-sm text-cyan-200" dir="ltr">
-                {cloneCommand}
-              </code>
-            </div>
-
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={copyCommand}
-                className="flex h-12 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[.06] font-semibold text-slate-200 transition hover:bg-white/[.09]"
-              >
-                {copied ? <CheckCircle2 className="size-4 text-emerald-400" /> : <Copy className="size-4" />}
-                {copied ? "تم النسخ" : "نسخ أمر الاستنساخ"}
-              </button>
+            <div className="mt-5 grid gap-3">
               <a
-                href="https://github.com/mksstoore-gif/ai-website-cloner-arabic"
-                target="_blank"
-                rel="noreferrer"
-                className="flex h-12 items-center justify-center gap-2 rounded-2xl bg-white text-sm font-bold text-slate-950 transition hover:bg-slate-100"
+                href={chatgptUrl}
+                className="flex h-14 items-center justify-center gap-2 rounded-2xl bg-white font-black text-slate-950 transition active:scale-[.99]"
               >
-                فتح المشروع
+                افتح في ChatGPT
                 <ExternalLink className="size-4" />
               </a>
+
+              <button
+                type="button"
+                onClick={copyTask}
+                className="flex h-12 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[.06] font-semibold text-slate-200"
+              >
+                {copied ? <CheckCircle2 className="size-4 text-emerald-400" /> : <Copy className="size-4" />}
+                {copied ? "تم نسخ المهمة" : "نسخ المهمة كخيار احتياطي"}
+              </button>
             </div>
+
+            <p className="mt-4 text-center text-xs leading-6 text-slate-500">
+              قد يفتح ChatGPT والمهمة مكتوبة مسبقاً وتحتاج فقط ضغطة «إرسال».
+            </p>
           </div>
         )}
 
-        <div className="mt-14 grid w-full max-w-5xl gap-3 text-right sm:grid-cols-3">
+        <div className="mt-12 grid w-full max-w-5xl gap-3 text-right sm:grid-cols-3">
           {[
-            ["01", "ضع الرابط", "الصق رابط الموقع الذي تريد إعادة بنائه."],
-            ["02", "افحص كل المقاسات", "جهّز نسخة للجوال والكمبيوتر مع نفس الصفحات."],
-            ["03", "عدّل المشروع", "النتيجة تكون كود Next.js قابل للتعديل والتطوير."],
+            ["01", "ضع الرابط", "أدخل رابط الموقع الذي تملك حق إعادة بنائه."],
+            ["02", "افتح ChatGPT", "المهمة الكاملة تنتقل مع الرابط والمستودع تلقائياً."],
+            ["03", "ChatGPT يبني", "يستخدم GitHub المتصل بحسابك وينفذ الفحص والبناء قدر الإمكان."],
           ].map(([num, title, desc]) => (
             <article key={num} className="rounded-3xl border border-white/8 bg-white/[.035] p-5">
               <div className="text-xs font-bold text-indigo-300">{num}</div>
@@ -191,7 +222,7 @@ export default function Home() {
         </div>
 
         <p className="mt-10 max-w-2xl text-xs leading-6 text-slate-600">
-          استخدم الأداة فقط مع المواقع التي تملكها أو لديك إذن بإعادة بنائها. بعض المواقع تمنع النسخ أو إعادة استخدام العلامة والمحتوى.
+          استخدم الأداة فقط للمواقع التي تملكها أو لديك إذن بإعادة بنائها. لا يتم تخزين مفتاح OpenAI داخل هذا الويب آب.
         </p>
       </section>
     </main>

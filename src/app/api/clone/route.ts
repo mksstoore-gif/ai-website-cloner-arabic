@@ -3,16 +3,25 @@ import { NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-function extractText(data: any): string {
-  if (typeof data?.output_text === "string" && data.output_text.trim()) {
+type OpenAIResponse = {
+  output_text?: string;
+  output?: Array<{
+    type?: string;
+    content?: Array<{ text?: string }>;
+  }>;
+  error?: { message?: string };
+};
+
+function extractText(data: OpenAIResponse): string {
+  if (typeof data.output_text === "string" && data.output_text.trim()) {
     return data.output_text.trim();
   }
 
   const parts: string[] = [];
-  for (const item of data?.output ?? []) {
-    if (item?.type !== "message") continue;
-    for (const content of item?.content ?? []) {
-      if (typeof content?.text === "string") parts.push(content.text);
+  for (const item of data.output ?? []) {
+    if (item.type !== "message") continue;
+    for (const content of item.content ?? []) {
+      if (typeof content.text === "string") parts.push(content.text);
     }
   }
   return parts.join("\n").trim();
@@ -36,7 +45,7 @@ export async function POST(request: NextRequest) {
 
   let body: { url?: string };
   try {
-    body = await request.json();
+    body = (await request.json()) as { url?: string };
   } catch {
     return NextResponse.json({ error: "طلب غير صالح." }, { status: 400 });
   }
@@ -71,7 +80,7 @@ export async function POST(request: NextRequest) {
   const response = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -84,11 +93,11 @@ export async function POST(request: NextRequest) {
     signal: AbortSignal.timeout(55000),
   });
 
-  const data = await response.json();
+  const data = (await response.json()) as OpenAIResponse;
 
   if (!response.ok) {
     const message =
-      data?.error?.message ||
+      data.error?.message ||
       "تعذر الاتصال بـ OpenAI. تحقق من المفتاح والفوترة والصلاحيات.";
     return NextResponse.json({ error: message }, { status: 502 });
   }

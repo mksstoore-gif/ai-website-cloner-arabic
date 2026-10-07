@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, ChevronLeft, Gift, Heart, Home, Menu, Search, ShieldCheck, ShoppingCart, Sparkles, Star, UserRound, Zap } from "lucide-react";
+import { useState } from "react";\nimport { Bell, ChevronLeft, Gift, Heart, Home, Menu, Search, ShieldCheck, ShoppingCart, Sparkles, Star, UserRound, Zap } from "lucide-react";
 
 const categories = [
   ["متاجر رقمية","🛍️"],["منصات ألعاب","🎮"],["الإتصال والبيانات","📱"],["بطاقات تسوق","💳"],
@@ -30,7 +30,7 @@ export default function HomePage(){
             <div className="text-left leading-none"><div className="text-[10px] font-bold text-violet-200">متجر البطاقات</div><div className="text-lg font-black tracking-tight">دليل<span className="text-[#ffd43b]">+</span></div></div>
             <div className="grid size-10 place-items-center rounded-xl bg-[#ffd43b] font-black text-[#5426b7]">D</div>
           </div>
-          <button className="relative grid size-10 place-items-center rounded-full bg-white/10"><ShoppingCart className="size-5"/><span className="absolute -left-1 -top-1 grid size-5 place-items-center rounded-full bg-[#ffd43b] text-[10px] font-black text-[#5426b7]">1</span></button>
+          <button onClick={()=>go("cart")} className="relative grid size-10 place-items-center rounded-full bg-white/10"><ShoppingCart className="size-5"/>{cart>0&&<span className="absolute -left-1 -top-1 grid size-5 place-items-center rounded-full bg-[#ffd43b] text-[10px] font-black text-[#5426b7]">{cart}</span>}</button>
         </div>
         <label className="flex h-12 items-center gap-3 rounded-2xl bg-white px-4 shadow-lg shadow-violet-950/10">
           <Search className="size-5 text-slate-400"/><input className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400" placeholder="اكتب اللي تبغاه، وخلّنا نلقاه لك"/>
@@ -38,7 +38,7 @@ export default function HomePage(){
       </div>
     </div>
 
-    <div className="mx-auto max-w-md space-y-7 px-4 pt-4">
+    <div className="mx-auto max-w-md space-y-7 px-4 pt-4">\n      {tab!=="home" && <button onClick={()=>go("home")} className="text-sm font-black text-[#5426b7]">← العودة للرئيسية</button>}\n      {tab==="rewards" && <section className="rounded-[26px] bg-gradient-to-l from-[#32156f] to-[#7a46e5] p-6 text-white"><div className="text-sm">رصيد نقاطك</div><div className="mt-2 text-4xl font-black">1,250 <span className="text-base">نقطة</span></div><p className="mt-4 text-xs text-violet-100">استبدل نقاطك بخصومات ومكافآت داخل المتجر.</p><div className="mt-4 grid gap-2">{["خصم 5 ر.س — 500 نقطة","خصم 10 ر.س — 900 نقطة","شحن مجاني — 1200 نقطة"].map(x=><button key={x} className="rounded-xl bg-white/15 p-3 text-right text-xs font-bold">{x}</button>)}</div></section>}\n      {tab==="notifications" && <section><h1 className="mb-4 text-2xl font-black">التنبيهات</h1><div className="space-y-3">{["وصلت بطاقات جديدة إلى قسم الألعاب","لديك 1,250 نقطة متاحة للاستبدال","تصفح أحدث عروض اليوم"].map(x=><div key={x} className="rounded-2xl bg-white p-4 text-sm font-bold shadow-sm">{x}</div>)}</div></section>}\n      {tab==="account" && <section className="rounded-3xl bg-white p-7 text-center shadow-sm"><UserRound className="mx-auto size-12 text-[#5426b7]"/><h1 className="mt-3 text-xl font-black">حساب الزائر</h1><p className="mt-2 text-xs text-slate-500">يمكنك تصفح المتجر وإضافة المنتجات للسلة بدون تسجيل دخول في هذه النسخة.</p></section>}\n      {tab==="cart" && <section><h1 className="mb-4 text-2xl font-black">السلة</h1><div className="rounded-3xl bg-white p-7 text-center shadow-sm"><ShoppingCart className="mx-auto size-10 text-[#5426b7]"/><p className="mt-3 font-bold">{cart ? `لديك ${cart} منتج في السلة` : "السلة فارغة"}</p>{cart>0&&<button onClick={()=>setCart(0)} className="mt-4 rounded-xl bg-red-50 px-4 py-2 text-xs font-bold text-red-600">تفريغ السلة</button>}</div></section>}\n      {tab==="explore" && <section><h1 className="mb-4 text-2xl font-black">استكشف كل البطاقات</h1><div className="grid grid-cols-2 gap-3">{products.map(p=><button onClick={()=>setCart(v=>v+1)} key={p.title} className="rounded-2xl bg-white p-4 text-right shadow-sm"><div className="grid h-24 place-items-center rounded-xl bg-violet-50 text-xl font-black text-violet-800">{p.art}</div><div className="mt-2 text-xs font-bold">{p.title}</div><div className="mt-2 text-xs font-black text-[#5426b7]">{p.price}</div><div className="mt-2 text-[10px] text-slate-400">اضغط للإضافة للسلة</div></button>)}</div></section>}\n      {tab==="home" && <>
       <section className="relative overflow-hidden rounded-[26px] bg-gradient-to-l from-[#32156f] via-[#5927b9] to-[#7a46e5] p-5 text-white shadow-xl shadow-violet-200">
         <div className="absolute -left-5 -top-6 size-28 rounded-full bg-[#ffd43b]/20 blur-sm"/><Sparkles className="absolute left-6 top-5 size-8 text-[#ffd43b]"/>
         <div className="relative max-w-[70%]"><span className="rounded-full bg-[#ffd43b] px-2.5 py-1 text-[10px] font-black text-[#44208e]">مكسب</span><h1 className="mt-3 text-2xl font-black leading-tight">كل ما شاركت أكثر، زاد مكسبك!</h1><p className="mt-2 text-xs leading-5 text-violet-100">شارك رابطك مع أصدقائك واربح من مشترياتهم.</p><button className="mt-4 rounded-xl bg-white px-4 py-2 text-xs font-black text-[#5426b7]">اكتشفه الآن</button></div>
@@ -54,11 +54,11 @@ export default function HomePage(){
 
       <section><h2 className="mb-4 text-center text-xl font-black">تسوّق أسرع وأسهل</h2><div className="grid gap-3">{[[Zap,"استلام فوري","تصلك بطاقتك مباشرة بعد إتمام الطلب."],[ShieldCheck,"دفع آمن","خيارات دفع متنوعة وتجربة موثوقة."],[Gift,"مكافآت أكثر","اكسب نقاطًا ومزايا مع مشترياتك."]].map(([Icon,title,desc])=>{const C=Icon as typeof Zap;return <div key={String(title)} className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm"><div className="grid size-11 shrink-0 place-items-center rounded-xl bg-violet-50 text-[#5426b7]"><C className="size-5"/></div><div><h3 className="text-sm font-black">{String(title)}</h3><p className="mt-1 text-[11px] leading-5 text-slate-500">{String(desc)}</p></div></div>})}</div></section>
 
-      <footer className="pb-4 pt-2 text-center text-[10px] leading-5 text-slate-400">واجهة تجريبية معاد بناؤها بكود React قابل للتعديل.<br/>الأسماء والعلامات المذكورة لأغراض العرض المرجعي.</footer>
+      <footer className="pb-4 pt-2 text-center text-[10px] leading-5 text-slate-400">واجهة متجر عربية متجاوبة للجوال.</footer>\n      </>}
     </div>
 
     <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto flex h-[72px] max-w-md items-center justify-around border-t border-slate-100 bg-white/95 px-3 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_30px_rgba(30,20,60,.08)] backdrop-blur">
-      {[[Home,"الرئيسية",true],[Search,"استكشف",false],[Gift,"المكافآت",false],[Bell,"التنبيهات",false],[UserRound,"حسابي",false]].map(([Icon,label,active])=>{const C=Icon as typeof Home;return <button key={String(label)} className={"flex min-w-12 flex-col items-center gap-1 text-[9px] font-bold "+(active?"text-[#5426b7]":"text-slate-400")}><C className={"size-5 "+(active?"fill-violet-100":"")}/><span>{String(label)}</span></button>})}
+      {[[Home,"الرئيسية","home"],[Search,"استكشف","explore"],[Gift,"المكافآت","rewards"],[Bell,"التنبيهات","notifications"],[UserRound,"حسابي","account"]].map(([Icon,label,target])=>{const C=Icon as typeof Home;const active=tab===target;return <button onClick={()=>go(String(target))} key={String(label)} className={"flex min-w-12 flex-col items-center gap-1 text-[9px] font-bold "+(active?"text-[#5426b7]":"text-slate-400")}><C className={"size-5 "+(active?"fill-violet-100":"")}/><span>{String(label)}</span></button>})}
     </nav>
   </main>
 }
